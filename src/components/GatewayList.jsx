@@ -3,45 +3,62 @@ import axios from 'axios';
 import GatewayDetail from './GatewayDetail';
 import AddDeviceForm from './AddDeviceForm';
 
-const GatewayList = () => {
-  const [gateways, setGateways] = useState([]);
+const GatewayList = ({ gateways }) => {
   const [selectedGateway, setSelectedGateway] = useState(null);
   const [showAddDeviceForm, setShowAddDeviceForm] = useState(false);
-  
-  const fetchGateways = async () => {
+  const [selectedGatewaySerialNumber, setSelectedGatewaySerialNumber] = useState(null);
+
+
+  useEffect(() => {
+    if (selectedGateway) {
+      fetchGateway(selectedGateway.serialNumber); 
+    }
+  }, []);
+
+  const fetchGateway = async (serialNumber) => {
     try {
-      const response = await axios.get('http://localhost:3000/gateways');
-      setGateways(response.data);
+      const response = await axios.get(`http://localhost:3000/gateways/${serialNumber}`);
+      setSelectedGateway(response.data);
     } catch (error) {
-      console.error('Error fetching gateways:', error);
+      console.error('Error fetching gateway details:', error);
+      setSelectedGateway(null);
     }
   };
 
-  useEffect(() => {
-    fetchGateways();
-  }, []);
-
   const handleGatewayClick = (gateway) => {
-    setSelectedGateway(gateway);
-    setShowAddDeviceForm(false); 
+    if (selectedGateway && selectedGateway.serialNumber === gateway.serialNumber) {
+      setSelectedGateway(null);
+      setShowAddDeviceForm(false);
+      setSelectedGatewaySerialNumber(null); 
+    } else {
+      setSelectedGateway(gateway);
+      setShowAddDeviceForm(false);
+      setSelectedGatewaySerialNumber(null); 
+    }
   };
-
   const handleShowAddDeviceForm = () => {
-    setShowAddDeviceForm(true); 
+    setShowAddDeviceForm(true);
   };
 
   const handleHideAddDeviceForm = () => {
-    setShowAddDeviceForm(false); 
+    setShowAddDeviceForm(false);
   };
-
 
   const handleAddDevice = async (device) => {
     try {
-      await axios.put(`http://localhost:3000/gateways/${selectedGateway.serialNumber}/add-device`, device);
-      fetchGateways();
-      setShowAddDeviceForm(false); 
+      fetchGateway(selectedGateway.serialNumber); 
+      setShowAddDeviceForm(false);
     } catch (error) {
       console.error('Error adding device:', error);
+    }
+  };
+
+  const handleRemoveDevice = async (uid) => {
+    try {
+      await axios.delete(`http://localhost:3000/gateways/${selectedGateway.serialNumber}/remove-device/${uid}`);
+      fetchGateway(selectedGateway.serialNumber); 
+    } catch (error) {
+      console.error('Error removing device:', error);
     }
   };
 
@@ -50,19 +67,19 @@ const GatewayList = () => {
       <h2>Gateway List</h2>
       <ul>
         {gateways.map((gateway) => (
-          <li style={{cursor:"pointer"}} key={gateway.serialNumber} onClick={() => handleGatewayClick(gateway)}>
+          <li style={{ cursor: 'pointer' }} key={gateway.serialNumber} onClick={() => handleGatewayClick(gateway)}>
             <strong>{gateway.name}</strong> - {gateway.serialNumber} - {gateway.ipv4}
           </li>
         ))}
       </ul>
-      {selectedGateway && <GatewayDetail gateway={selectedGateway} />}
+      {selectedGateway && <GatewayDetail gateway={selectedGateway} onRemoveDevice={handleRemoveDevice} />}
       {selectedGateway && !showAddDeviceForm && (
         <button onClick={handleShowAddDeviceForm}>Add Device to Gateway</button>
       )}
       {showAddDeviceForm && (
         <div>
-             <AddDeviceForm
-            gatewaySerialNumber={selectedGateway.serialNumber}
+          <AddDeviceForm
+            gatewaySerialNumber={selectedGatewaySerialNumber || selectedGateway.serialNumber}
             onAddDevice={handleAddDevice}
           />
           <button onClick={handleHideAddDeviceForm}>Cancel</button>

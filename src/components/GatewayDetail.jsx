@@ -1,25 +1,32 @@
 import React from 'react';
 
-const GatewayDetail = ({ gateway }) => {
+const GatewayDetail = ({ gateway, onRemoveDevice }) => {
   return (
     <div>
-      <h2>Gateway Details</h2>
-      <p>Serial Number: {gateway.serialNumber}</p>
-      <p>Name: {gateway.name}</p>
-      <p>IPv4 Address: {gateway.ipv4}</p>
+      <h3>Gateway Details</h3>
+      <p>
+        <strong>Name:</strong> {gateway.name}
+      </p>
+      <p>
+        <strong>Serial Number:</strong> {gateway.serialNumber}
+      </p>
+      <p>
+        <strong>IPv4:</strong> {gateway.ipv4}
+      </p>
       {gateway.devices && gateway.devices.length > 0 ? (
         <div>
-          <h3>Devices:</h3>
+          <h4>Associated Devices</h4>
           <ul>
             {gateway.devices.map((device) => (
               <li key={device.uid}>
-                UID: {device.uid} - Vendor: {device.vendor} - Date Created: {device.dateCreated} - Status: {device.status}
+                UID: {device.uid}, Vendor: {device.vendor}, Date Created: {device.dateCreated}, Status: {device.status}
+                <button onClick={() => onRemoveDevice(device.uid)}>Remove</button>
               </li>
             ))}
           </ul>
         </div>
       ) : (
-        <p>No devices associated with this gateway.</p>
+        <p>No associated devices.</p>
       )}
     </div>
   );

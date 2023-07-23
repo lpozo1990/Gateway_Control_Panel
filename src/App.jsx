@@ -18,6 +18,8 @@ const App = () => {
   useEffect(() => {
     fetchGateways();
   }, []);
+
+
   
   const handleAddGateway = async (newGateway) => {
     try {

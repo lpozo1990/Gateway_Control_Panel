@@ -18,14 +18,8 @@ const AddDeviceForm = ({ gatewaySerialNumber, onAddDevice }) => {
         status,
       });
       console.log('New device added:', response.data);
-      const newDevice = {
-        uid,
-        vendor,
-        dateCreated,
-        status,
-      };
   
-      onAddDevice(newDevice);
+      onAddDevice(response.data);
       setUID('');
       setVendor('');
       setDateCreated('');
